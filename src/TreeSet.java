@@ -15,7 +15,14 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
 
 	@Override
 	public boolean add(T element) {
-		return add(root, element);
+		if (root == null) {
+			root = new Node<>(element);
+			size++;
+			return true;
+		}
+		else {
+			return add(root, element);
+		}
 	}
 
 	/**
@@ -27,7 +34,32 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
 	 * @return true if element is added, false if it is already in the tree.
 	 */
 	private boolean add(Node<T> current, T element) {
-		return false;
+		int comparison = element.compareTo(current.element);
+
+		if (comparison == 0) {
+			return false;
+		}
+
+		if (comparison < 0) { // Element is in left subtree.
+			if (current.left == null) {
+				current.left = new Node<>(element);
+				size++;
+				return true;
+			}
+			else {
+				return add(current.left, element);
+			}
+		}
+		else { // Element is in right subtree.
+			if (current.right == null) {
+				current.right = new Node<>(element);
+				size++;
+				return true;
+			}
+			else {
+				return add(current.right, element);
+			}
+		}
 	}
 
 	@Override
@@ -45,12 +77,55 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
 	 * @return
 	 */
 	private boolean contains(Node<T> current, T element) {
-		return false;
+		if (current == null) {
+			return false;
+		}
+
+		int comparison = element.compareTo(current.element);
+		if (comparison == 0) {
+			return true;
+		}
+		if (comparison < 0) {
+			return contains(current.left, element);
+		}
+		else {
+			return contains(current.right, element);
+		}
 	}
 
 	@Override
 	public boolean containsAll(Set<T> rhs) {
 		return false;
+	}
+
+	public T floor(T value) {
+		return floor(root, value);
+	}
+
+	private T floor(Node<T> current, T value) {
+		if (current == null) {
+			return null;
+		}
+
+		int comparison = value.compareTo(current.element);
+
+		if (comparison == 0) {
+			return current.element;
+		}
+
+		if (comparison > 0) {
+			T element = floor(current.right, value);
+
+			if (element == null) {
+				return current.element;
+			}
+			else {
+				return element;
+			}
+		}
+		else {
+			return floor(current.left, value);
+		}
 	}
 
 	@Override
@@ -67,6 +142,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
 	 * @return the value removed
 	 */
 	private boolean removeHelper(Node<T> current, Node<T> parent, T element) {
+
 		// binary search is unsuccessful
 		if (current == null) {
 			return false;
@@ -76,21 +152,21 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
 
 		// node found:
 		if (comparison == 0) {
+
 			// if we need to remove an internal node with two children
 			// find the successor in the left subtree and replace the current entry
 			// with the successor's entry.
 			if (current.left != null && current.right != null) {
-				Node<T> tmp = current; // store the current node to replace its entry
 
-				// Ensure that `current` is the successor and that `parent` is its parent
+				Node<T> tmp = current; // store the current node to replace it's entry
+
+				// Ensure that `current` is the successor and that `parent` is it's parent
 				// so that we remove this node below
 				current = current.left;
-
 				while (current.right != null) {
 					parent = current;
 					current = current.right;
 				}
-
 				tmp.element = current.element;
 			}
 
@@ -109,6 +185,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
 	}
 
 	private void removeNode(Node<T> current, Node<T> parent) {
+
 		// case 1: root
 		if (current == root) {
 			if (current.left == null) {
@@ -158,9 +235,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-
 		toStringHelper(root, builder);
-
 		return builder.toString();
 	}
 
@@ -168,7 +243,6 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
 		if (current == null) {
 			return;
 		}
-
 		toStringHelper(current.left, builder);
 		builder.append(current.element);
 		toStringHelper(current.right, builder);
